@@ -229,7 +229,17 @@ void FollowLine(){
         CommandeGauche = 10000 + ( Kp * Centre );
     }
 }
-
+void CrossLine(){
+    int16_t Kp = 3;
+    if(Centre >= 0){
+        CommandeDroite = 7000;
+        CommandeGauche = 7000 + ( Kp * Centre );
+    }
+    if(Centre < 0){
+        CommandeDroite = 7000 - ( Kp * Centre );
+        CommandeGauche = 7000;
+    }
+}
 
 // ============== End ============
 void main(void) {
@@ -261,7 +271,7 @@ void main(void) {
     */
     FindCentre();
     AfficheLedBleues(Centre);
-    FollowLine();
+    CrossLine();
 
     uint32_t i; // capteurs 0 - 7
     for(i=0; i<8; i++) { Barre(ValCapteurs[i], i, YELLOW); }
