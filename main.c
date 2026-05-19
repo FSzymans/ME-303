@@ -219,14 +219,14 @@ void FindCentre() {
   Centre -= ValCapteurs[7]*7;
 }
 void FollowLine(){
-    int16_t Kp = 500;
+    int16_t Kp = 10;
     if(Centre >= 0){
-        CommandeDroite = 20000 - ( Kp * Centre );
-        CommandeGauche = 20000;
+        CommandeDroite = 10000 - ( Kp * Centre );
+        CommandeGauche = 10000;
     }
     if(Centre < 0){
-        CommandeDroite = 20000;
-        CommandeGauche = 20000 - ( Kp * Centre );
+        CommandeDroite = 10000;
+        CommandeGauche = 10000 + ( Kp * Centre );
     }
 }
 
