@@ -204,6 +204,53 @@ void AfficheTension() {
 }
 
 // =============== Programme principal =================
+
+// =============== States =================
+enum State {IDLE, INFINITY, ZEBRA, DANCE};
+enum State state;
+
+//================ Affichage of crossing counter ==============
+#define X_CC 235
+#define Y_CC 50
+uint8_t cross_count = 0;
+
+void AfficheCC(){
+    char cc[50] = "XX";
+    snprintf(cc, sizeof(cc), "%d COUNTER   ", cross_count);
+    Show_Str(X_CC, Y_CC, WHITE, BLACK, (u8*)&cc, 16, 0);
+    //Show_Str(X_CC, 100, WHITE, BLACK, (u8*)&cc, 16, 0);
+}
+
+//================ Affichage of mode ==============
+#define X_TXT 260
+#define Y_TXT 175
+
+#define X_MODE 240
+#define Y_MODE 190
+
+char mode[50] = "IDLE";
+
+
+void AfficheMode(){
+	char txt[50] = "MODE";
+	switch(state){
+		case IDLE:
+			mode = "IDLE"
+		case INFINITY:
+			mode ="INFINITY";
+			break;
+		case ZEBRA:
+			mode ="ZEBRA";
+			break;
+		case DANCE:
+			mode ="DANCE";
+			break;
+
+	}
+	Show_Str(X_TXT, Y_TXT, RED, BLACK,(u8*)&txt, 16, 0);
+	Show_Str(X_MODE, Y_MODE, WHITE, BLACK,(u8*)&mode, 16, 0);
+}
+
 // =============== Start ===============
 int32_t Centre;
 
@@ -265,6 +312,26 @@ void CrossLine(){
      }
 }
 
+void InfinityRoute(){
+	uint8_t crossing = 1;
+	uint16_t f = 0;
+	for (f= 0; f < 8; f++){
+		if(ValCapteurs[f] < 100){
+			crossing = 0;
+			break;
+		}
+	}
+
+	if (crossing) cross_count++;
+	if (cross_count >= 2) {
+		CommandeDroite = 0;
+		CommandeGauche = 0;
+	} else FollowLine();
+
+}
+
+
+
 // ============== End ============
 void main(void) {
   WDTCTL = WDTPW | WDTHOLD;
@@ -278,7 +345,7 @@ void main(void) {
 
   POINT_COLOR=WHITE;
   LCD_Fill(0, 00, lcddev.width, 20, RED);
-  Gui_StrCenter(0, 2, WHITE, BLUE, "ROBOT 2026", 16, 1);
+  Gui_StrCenter(0, 2, WHITE, BLUE, "CHAOS BOT", 16, 1);
   LCD_Fill(0, lcddev.height-20, lcddev.width, lcddev.height, BLUE);
   Gui_StrCenter(0, lcddev.height-18, WHITE, BLUE, "EPFL", 16, 1);//
 
@@ -295,12 +362,34 @@ void main(void) {
     */
     FindCentre();
     AfficheLedBleues(Centre);
-    CrossLine();
 
     uint32_t i; // capteurs 0 - 7
     for(i=0; i<8; i++) { Barre(ValCapteurs[i], i, YELLOW); }
 
+    switch(state) {
+    	case IDLE://instead do in interrupt part?
+    		if (Pous1On && Pous2On){
+    			state=DANCE;
+    		}else if(Pous1On){
+    			state=INFINITY;
+    			cross_counter=0;
+    		}else if(Pous2On){
+    			state=ZEBRA;
+    		}else state = IDLE;
+    		break;
+    	case ZEBRA:
+    		break;
+    	case DANCE:
+    		break;
+    	case INFINITY:
+    		InfinityRoute();
+    		if(cross_counter >= 2) state = IDLE;
+    		break;
+    }
+
     AfficheTension();
+    AfficheCC();
+    AfficheMode();
   }
 }
 
