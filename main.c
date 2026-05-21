@@ -204,6 +204,11 @@ void AfficheTension() {
 }
 
 // =============== Programme principal =================
+
+// =============== States =================
+enum State {IDLE, INFINITY, ZEBRA, DANCE};
+enum State state;
+
 //================ Affichage of crossing counter ==============
 #define X_CC 235
 #define Y_CC 50
@@ -223,21 +228,28 @@ void AfficheCC(){
 #define X_MODE 240
 #define Y_MODE 190
 
-
-//char * zebra = "ZEBRA";
-//char * dance = "TWERK";
-//char * infinity = "INFINITY";
-//char mode[50] = "TWERK";
-//char mode[50] = "ZEBRA";
-char mode[50] = "INFINITY";
+char mode[50] = "IDLE";
 
 
 void AfficheMode(){
 	char txt[50] = "MODE";
-	Show_Str(X_TXT, Y_TXT, RED, BLACK,(u8*)&txt, 16, 0);
-  Show_Str(X_MODE, Y_MODE, WHITE, BLACK,(u8*)&mode, 16, 0);
-}
+	switch(state){
+		case IDLE:
+			mode = "IDLE"
+		case INFINITY:
+			mode ="INFINITY";
+			break;
+		case ZEBRA:
+			mode ="ZEBRA";
+			break;
+		case DANCE:
+			mode ="DANCE";
+			break;
 
+	}
+	Show_Str(X_TXT, Y_TXT, RED, BLACK,(u8*)&txt, 16, 0);
+	Show_Str(X_MODE, Y_MODE, WHITE, BLACK,(u8*)&mode, 16, 0);
+}
 
 // =============== Start ===============
 int32_t Centre;
@@ -295,8 +307,7 @@ void InfinityRoute(){
 
 }
 
-enum State {IDLE, INFINITY, ZEBRA, DANCE};
-enum State state;
+
 
 // ============== End ============
 void main(void) {
@@ -332,10 +343,6 @@ void main(void) {
     uint32_t i; // capteurs 0 - 7
     for(i=0; i<8; i++) { Barre(ValCapteurs[i], i, YELLOW); }
 
-    AfficheTension();
-    AfficheCC();
-    AfficheMode();
-
     switch(state) {
     	case IDLE://instead do in interrupt part?
     		if (Pous1On && Pous2On){
@@ -356,6 +363,10 @@ void main(void) {
     		if(cross_counter >= 2) state = IDLE;
     		break;
     }
+
+    AfficheTension();
+    AfficheCC();
+    AfficheMode();
   }
 }
 
