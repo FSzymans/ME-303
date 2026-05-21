@@ -220,7 +220,6 @@ void AfficheCC(){
     char cc[50] = "XX";
     snprintf(cc, sizeof(cc), "%d COUNTER   ", cross_counter);
     Show_Str(X_CC, Y_CC, WHITE, BLACK, (u8*)&cc, 16, 0);
-    //Show_Str(X_CC, 100, WHITE, BLACK, (u8*)&cc, 16, 0);
 }
 
 //================ Affichage of mode ==============
@@ -230,27 +229,15 @@ void AfficheCC(){
 #define X_MODE 240
 #define Y_MODE 190
 
-char mode[50] = "IDLE";
+char * mode[] = {"IDLE", "INFINITY", "ZEBRA", "DANCE"};
 
 
 void AfficheMode(){
 	char txt[50] = "MODE";
-	switch(state){
-		case IDLE:
-			mode = "IDLE";
-		case INFINITY:
-			mode ="INFINITY";
-			break;
-		case ZEBRA:
-			mode ="ZEBRA";
-			break;
-		case DANCE:
-			mode ="DANCE";
-			break;
-
-	}
+	char buffer[50]="IDLE";
+	snprintf(buffer, sizeof(buffer), "%-8s", mode[state]);
 	Show_Str(X_TXT, Y_TXT, RED, BLACK,(u8*)&txt, 16, 0);
-	Show_Str(X_MODE, Y_MODE, WHITE, BLACK,(u8*)&mode, 16, 0);
+	Show_Str(X_MODE, Y_MODE, WHITE, BLACK,(u8*)&buffer, 16, 0);
 }
 
 // =============== Start ===============
@@ -268,7 +255,7 @@ void FindCentre() {
   Centre -= ValCapteurs[7]*6;
 }
 void FollowLine(){
-    int16_t Kp = 10;
+    int16_t Kp = 5;
     if(Centre >= 0){
         CommandeDroite = 10000 - ( Kp * Centre );
         CommandeGauche = 10000;
@@ -370,6 +357,7 @@ void main(void) {
 
     switch(state) {
     	case IDLE://instead do in interrupt part?
+    		//cross_counter=0;
     		if (Pous1On && Pous2On){
     			state=DANCE;
     		}else if(Pous1On){
