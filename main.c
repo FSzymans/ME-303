@@ -209,14 +209,14 @@ int32_t Centre;
 
 void FindCentre() {
   Centre = 0;
-  Centre += ValCapteurs[0]*7;
+  Centre += ValCapteurs[0]*6;
   Centre += ValCapteurs[1]*5;
   Centre += ValCapteurs[2]*3;
   Centre += ValCapteurs[3]*1;
   Centre -= ValCapteurs[4]*1;
   Centre -= ValCapteurs[5]*3;
   Centre -= ValCapteurs[6]*5;
-  Centre -= ValCapteurs[7]*7;
+  Centre -= ValCapteurs[7]*6;
 }
 void FollowLine(){
     int16_t Kp = 10;
@@ -229,15 +229,16 @@ void FollowLine(){
         CommandeGauche = 10000 + ( Kp * Centre );
     }
 }
+
 void CrossLine(){
     int16_t Kp = 3;
-    if(Centre >= 0){
-        CommandeDroite = 7000;
-        CommandeGauche = 7000 + ( Kp * Centre );
-    }
     if(Centre < 0){
         CommandeDroite = 7000 - ( Kp * Centre );
         CommandeGauche = 7000;
+    }
+    if(Centre >= 0){
+        CommandeDroite = 7000;
+        CommandeGauche = 7000 + ( Kp * Centre );
     }
 }
 
