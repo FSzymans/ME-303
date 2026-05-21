@@ -229,17 +229,40 @@ void FollowLine(){
         CommandeGauche = 10000 + ( Kp * Centre );
     }
 }
-
+int8_t black = 0;
 void CrossLine(){
-    int16_t Kp = 3;
-    if(Centre < 0){
-        CommandeDroite = 7000 - ( Kp * Centre );
-        CommandeGauche = 7000;
+    int16_t Sum = 0;
+    uint8_t i;
+    for (i=0; i<8; i++) {
+                    Sum += ValCapteurs[i];
     }
-    if(Centre >= 0){
-        CommandeDroite = 7000;
-        CommandeGauche = 7000 + ( Kp * Centre );
-    }
+
+
+     if(Sum < 800){
+         if((ValCapteurs[0] <100) && (ValCapteurs[7] < 100)){
+             CommandeDroite = 7000;
+             CommandeGauche = 7000;
+         }
+         if((ValCapteurs[0] > 100) && (ValCapteurs[7] < 100)){
+              CommandeDroite = 0;
+              CommandeGauche = 7000;
+              delay_ms(70);
+              //black = 1;
+         }
+         if((ValCapteurs[0] < 100) && (ValCapteurs[7] > 100)){
+              CommandeDroite = 7000;
+              CommandeGauche = 0;
+              delay_ms(70);
+              //black = 1;
+         }
+
+     }
+     else{
+         CommandeDroite = 7000;
+         CommandeGauche = 7000;
+         delay_ms(100);
+         //black = 0;
+     }
 }
 
 // ============== End ============
