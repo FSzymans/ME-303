@@ -209,14 +209,16 @@ void AfficheTension() {
 enum State {IDLE, INFINITY, ZEBRA, DANCE};
 enum State state;
 
+// =============== Global variables =================
+
 //================ Affichage of crossing counter ==============
 #define X_CC 235
 #define Y_CC 50
-uint8_t cross_count = 0;
+uint8_t cross_counter = 0;
 
 void AfficheCC(){
     char cc[50] = "XX";
-    snprintf(cc, sizeof(cc), "%d COUNTER   ", cross_count);
+    snprintf(cc, sizeof(cc), "%d COUNTER   ", cross_counter);
     Show_Str(X_CC, Y_CC, WHITE, BLACK, (u8*)&cc, 16, 0);
     //Show_Str(X_CC, 100, WHITE, BLACK, (u8*)&cc, 16, 0);
 }
@@ -235,7 +237,7 @@ void AfficheMode(){
 	char txt[50] = "MODE";
 	switch(state){
 		case IDLE:
-			mode = "IDLE"
+			mode = "IDLE";
 		case INFINITY:
 			mode ="INFINITY";
 			break;
@@ -322,8 +324,8 @@ void InfinityRoute(){
 		}
 	}
 
-	if (crossing) cross_count++;
-	if (cross_count >= 2) {
+	if (crossing) cross_counter++;
+	if (cross_counter >= 2) {
 		CommandeDroite = 0;
 		CommandeGauche = 0;
 	} else FollowLine();
