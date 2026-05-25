@@ -148,7 +148,7 @@ void InitAdc(){
     P5->SEL0 |= (BIT3); P5->SEL1 |= (BIT3);
     P4->SEL0 |= (BIT7); P4->SEL1 |= (BIT7);
 
-    REF_A->CTL0 = REF_A_CTL0_VSEL_3; // reference interne � 2.5 V
+    REF_A->CTL0 = REF_A_CTL0_VSEL_3; // reference interne ï¿½ 2.5 V
     REF_A->CTL0 |= REF_A_CTL0_ON; // REF ON
     while (!(REF_A->CTL0 & REF_A_CTL0_GENACT)) {} // stabilisation
 }
@@ -206,7 +206,7 @@ void AfficheTension() {
 // =============== Programme principal =================
 
 // =============== States =================
-enum State {IDLE, INFINITY, ZEBRA, DANCE};
+enum State {IDLE, INFINITY, ZEBRA, DANCE, DANCE_T};
 enum State state;
 
 // =============== Global variables =================
@@ -229,7 +229,7 @@ void AfficheCC(){
 #define X_MODE 240
 #define Y_MODE 190
 
-char * mode[] = {"IDLE", "INFINITY", "ZEBRA", "DANCE"};
+char * mode[] = {"IDLE", "INFINITY", "ZEBRA", "DANCE", "DANCE_T"};
 
 
 void AfficheMode(){
@@ -240,28 +240,176 @@ void AfficheMode(){
 	Show_Str(X_MODE, Y_MODE, WHITE, BLACK,(u8*)&buffer, 16, 0);
 }
 
+//================ Affichage of DANCE_T ==============
+#define X_HEAD 155
+#define Y_HEAD 140
+
+#define X_TORSO 145
+#define Y_TORSO 160
+
+#define X_LEGS 140
+#define Y_LEGS 185
+
+volatile uint8_t rythm = 0;
+
+char head[10] = "o";
+char torso[10] = "/|\\" ;
+char legs[10] = "_||_";
+
+void AfficheDance(){
+
+	switch(rythm){
+		case 0:
+			snprintf(head, sizeof(head), "%-1s", "o");
+			snprintf(torso, sizeof(torso), "%-3s", "/|\\");
+			snprintf(legs, sizeof(legs), "%-4s", "_||_");
+			break;
+		case 1:
+			snprintf(head, sizeof(head), "%-1s", "o");
+			snprintf(torso, sizeof(torso), "%-3s", "-|-");
+			snprintf(legs, sizeof(legs), "%-4s", "_/\\_");
+			break;
+		case 2:
+			snprintf(head, sizeof(head), "%-1s", "o");
+			snprintf(torso, sizeof(torso), "%-3s", "-|~");
+			snprintf(legs, sizeof(legs), "%-4s", "_||_");
+			break;
+		case 3:
+			snprintf(head, sizeof(head), "%-1s", "o");
+			snprintf(torso, sizeof(torso), "%-3s", "~|~");
+			snprintf(legs, sizeof(legs), "%-4s", "_|\\_");
+			break;
+		case 4:
+			snprintf(head, sizeof(head), "%-1s", "o");
+			snprintf(torso, sizeof(torso), "%-3s", "~|~");
+			snprintf(legs, sizeof(legs), "%-4s", "_/|_");
+			break;
+		case 5:
+			snprintf(head, sizeof(head), "%-1s", "o");
+			snprintf(torso, sizeof(torso), "%-3s", "~|-");
+			snprintf(legs, sizeof(legs), "%-4s", "_/\\_");
+			break;
+		case 6:
+			snprintf(head, sizeof(head), "%-1s", "o");
+			snprintf(torso, sizeof(torso), "%-3s", "-|-");
+			snprintf(legs, sizeof(legs), "%-4s", "_/\\_");
+			break;
+		case 7:
+			snprintf(head, sizeof(head), "%-1s", "o");
+			snprintf(torso, sizeof(torso), "%-3s", "/|\\");
+			snprintf(legs, sizeof(legs), "%-4s", "_||_");
+			break;
+	}
+
+
+	if(state==DANCE_T){
+		Show_Str(X_HEAD, Y_HEAD, WHITE, BLACK,(u8*)&head, 16, 0);
+		Show_Str(X_TORSO, Y_TORSO, WHITE, BLACK,(u8*)&torso, 16, 0);
+		Show_Str(X_LEGS, Y_LEGS, WHITE, BLACK,(u8*)&legs, 16, 0);
+	}
+}
+
+void cleanDance(){
+
+	snprintf(head, sizeof(head), "%-1s", "");
+	snprintf(torso, sizeof(torso), "%-3s", "");
+	snprintf(legs, sizeof(legs), "%-4s", "");
+
+	Show_Str(X_HEAD, Y_HEAD, WHITE, BLACK,(u8*)&head, 16, 0);
+	Show_Str(X_TORSO, Y_TORSO, WHITE, BLACK,(u8*)&torso, 16, 0);
+	Show_Str(X_LEGS, Y_LEGS, WHITE, BLACK,(u8*)&legs, 16, 0);
+
+}
+
+//================ Affichage of crossing counter ==============
+#define X_r 235
+#define Y_r 100
+
+void AfficheR(){
+    char r[50] = "XX";
+    snprintf(r, sizeof(r), "%d RYTHM   ", rythm);
+    Show_Str(X_r, Y_r, WHITE, BLACK, (u8*)&r, 16, 0);
+}
+
+// Timer
+void TA2_N_IRQHandler(void){
+	switch (TA1IV) {
+	  case 2 : // TA1 CCR1 : debut du cycle suivant
+
+		  TA2CCR1 += 65534;
+		  TA2CCTL1 &=~CCIFG;
+		 	      if (state == DANCE_T){
+		 			  switch(rythm){
+		 				  case 0:
+		 					  CommandeDroite=15000;
+		 					  CommandeGauche=0;
+
+		 					  break;
+		 				  case 1:
+		 					  CommandeDroite=-15000;
+		 					  CommandeGauche=0;
+
+		 							  break;
+		 				  case 2:
+		 					  CommandeDroite=10000;
+		 					  CommandeGauche=10000;
+		 							  break;
+		 				  case 3:
+		 					  CommandeDroite=-10000;
+		 					  CommandeGauche=-10000;
+		 							  break;
+		 				  case 4:
+		 					  CommandeDroite=0;
+		 					  CommandeGauche=15000;
+		 							  break;
+		 				  case 5:
+		 					  CommandeDroite=0;
+		 					  CommandeGauche=-15000;
+		 							  break;
+		 				  case 6:
+		 					  CommandeDroite=-10000;
+		 					  CommandeGauche=-10000;
+		 							  break;
+		 				  case 7:
+		 					  CommandeDroite=10000;
+		 					  CommandeGauche=10000;
+		 							  break;
+		 			  }
+		 			  rythm++;
+		 			  if(rythm>8){
+		 				  state=IDLE;
+		 				  cleanDance();
+		 				  TA2CCR1 += 65534;
+		 			  }
+		 	      }
+	  case 4 : break;
+	  case 6 :  break;
+	  default : break;
+	}
+}
+
 // =============== Start ===============
 int32_t Centre;
 
 void FindCentre() {
-  Centre = 0;
-  Centre += ValCapteurs[0]*6;
+  Centre = 0.;
+  Centre += ValCapteurs[0]*7;
   Centre += ValCapteurs[1]*5;
   Centre += ValCapteurs[2]*3;
   Centre += ValCapteurs[3]*1;
   Centre -= ValCapteurs[4]*1;
   Centre -= ValCapteurs[5]*3;
   Centre -= ValCapteurs[6]*5;
-  Centre -= ValCapteurs[7]*6;
+  Centre -= ValCapteurs[7]*7;
 }
 void FollowLine(){
-    int16_t Kp = 5;
+    int16_t Kp = 2;
     if(Centre >= 0){
         CommandeDroite = 10000 - ( Kp * Centre );
-        CommandeGauche = 10000;
+        CommandeGauche = 10000 + ( Kp * Centre );
     }
     if(Centre < 0){
-        CommandeDroite = 10000;
+        CommandeDroite = 10000 - ( Kp * Centre );
         CommandeGauche = 10000 + ( Kp * Centre );
     }
 }
@@ -302,15 +450,17 @@ void CrossLine(){
 }
 
 void InfinityRoute(){
-	uint8_t crossing = 1;
-	uint16_t f = 0;
+	uint8_t crossing = 0;
+	uint8_t f = 0;
+	uint8_t n_max_capt = 0;
 	for (f= 0; f < 8; f++){
-		if(ValCapteurs[f] < 100){
-			crossing = 0;
-			break;
-		}
+		if(ValCapteurs[f] > 60) n_max_capt++;
 	}
 
+	if(n_max_capt > 4){
+		crossing++;
+		delay(20);
+	}
 	if (crossing) cross_counter++;
 	if (cross_counter >= 2) {
 		CommandeDroite = 0;
@@ -319,7 +469,26 @@ void InfinityRoute(){
 
 }
 
+void Dance(){
+	uint8_t i = 0;
+	for(i=0; i<4;i++){
+		CommandeDroite=15000;
+		CommandeGauche=0;
+		delay(8000*1000);
+		CommandeDroite=0;
+		CommandeGauche=15000;
+		delay(8000*1000);
+		CommandeDroite=0;
+		CommandeGauche=15000;
+		delay(8000*1000);
+	}
 
+
+}
+void StopBot(){
+	CommandeDroite=0;
+	CommandeGauche=0;
+}
 
 // ============== End ============
 void main(void) {
@@ -338,26 +507,32 @@ void main(void) {
   LCD_Fill(0, lcddev.height-20, lcddev.width, lcddev.height, BLUE);
   Gui_StrCenter(0, lcddev.height-18, WHITE, BLUE, "EPFL", 16, 1);//
 
+
+  // Timer dance t
+  TA2CTL = TASSEL_1 | MC_2 | ID_0; // TA2 en mode UP
+
+  NVIC->ISER[0] |= 1 << ((TA2_N_IRQn) & 31);
+  TA2CCTL1 = CCIE;
+  TA2CCR1 += 65534;
+  //Timer dance t
+
   while(1) {
     while(!debPwmMot) {} debPwmMot = 0; // synchronisation avec le PWM
 
-    /*CommandeGauche = CommandeDroite = 0;
-    if(Pous1On) { CommandeGauche = 20000; Led8On; } else { Led8Off; }
-    if(Pous2On) { CommandeGauche = -10000; Led7On; } else { Led7Off; }
-    if(Pous3On) { CommandeDroite = 20000; Led6On; } else { Led6Off; }
-    if(Pous4On) { CommandeDroite = -10000; Led5On; } else { Led5Off; }
-
-    if(Pous5On) { CommandeGauche = CommandeDroite = 30000; Led4On; } else { Led4Off; }
-    */
     FindCentre();
     AfficheLedBleues(Centre);
 
-    uint32_t i; // capteurs 0 - 7
-    for(i=0; i<8; i++) { Barre(ValCapteurs[i], i, YELLOW); }
+
+    if(state!=DANCE_T){
+    	uint32_t i; // capteurs 0 - 7
+    	for(i=0; i<8; i++) { Barre(ValCapteurs[i], i, YELLOW); }
+    }
+
 
     switch(state) {
     	case IDLE://instead do in interrupt part?
     		//cross_counter=0;
+    		StopBot();
     		if (Pous1On && Pous2On){
     			state=DANCE;
     		}else if(Pous1On){
@@ -365,21 +540,31 @@ void main(void) {
     			cross_counter=0;
     		}else if(Pous2On){
     			state=ZEBRA;
+    		}else if(Pous3On){
+    			state=DANCE_T;
+    			rythm = 0;
     		}else state = IDLE;
     		break;
     	case ZEBRA:
+    		CrossLine();
     		break;
     	case DANCE:
+    		Dance();
+    		state=IDLE;
     		break;
     	case INFINITY:
     		InfinityRoute();
     		if(cross_counter >= 2) state = IDLE;
+    		break;
+    	case DANCE_T:
     		break;
     }
 
     AfficheTension();
     AfficheCC();
     AfficheMode();
+    AfficheDance();
+    AfficheR();
   }
 }
 
