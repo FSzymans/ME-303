@@ -392,60 +392,73 @@ void TA2_N_IRQHandler(void){
 int32_t Centre;
 
 void FindCentre() {
-  Centre = 0.;
+  Centre = 0;
   Centre += ValCapteurs[0]*7;
   Centre += ValCapteurs[1]*5;
-  Centre += ValCapteurs[2]*3;
+  Centre += ValCapteurs[2]*4;
   Centre += ValCapteurs[3]*1;
   Centre -= ValCapteurs[4]*1;
-  Centre -= ValCapteurs[5]*3;
+  Centre -= ValCapteurs[5]*4;
   Centre -= ValCapteurs[6]*5;
   Centre -= ValCapteurs[7]*7;
 }
 void FollowLine(){
-    int16_t Kp = 2;
+    int16_t Kp = 4;
     if(Centre >= 0){
-        CommandeDroite = 10000 - ( Kp * Centre );
-        CommandeGauche = 10000 + ( Kp * Centre );
+        CommandeDroite = 7000 - ( Kp * Centre );
+        CommandeGauche = 7000;
     }
     if(Centre < 0){
-        CommandeDroite = 10000 - ( Kp * Centre );
-        CommandeGauche = 10000 + ( Kp * Centre );
+        CommandeDroite = 7000;
+        CommandeGauche = 7000 + ( Kp * Centre );
     }
 }
 int8_t black = 0;
+volatile uint16_t c = 0;
 void CrossLine(){
     int16_t Sum = 0;
     uint8_t i;
+
     for (i=0; i<8; i++) {
                     Sum += ValCapteurs[i];
     }
 
 
      if(Sum < 800){
-         if((ValCapteurs[0] <100) && (ValCapteurs[7] < 100)){
-             CommandeDroite = 7000;
-             CommandeGauche = 7000;
+
+         if((ValCapteurs[0] <120) && (ValCapteurs[7] < 120)){
+             CommandeDroite = 4000;
+             CommandeGauche = 4000;
+             delay_ms(50);
+             c++;
          }
-         if((ValCapteurs[0] > 100) && (ValCapteurs[7] < 100)){
-              CommandeDroite = 0;
-              CommandeGauche = 7000;
-              delay_ms(70);
+         if((ValCapteurs[0] > 120) && (ValCapteurs[7] < 120)){
+              CommandeDroite = 2000;
+              CommandeGauche = 4000;
+              delay_ms(50);
+              c++;
               //black = 1;
          }
-         if((ValCapteurs[0] < 100) && (ValCapteurs[7] > 100)){
-              CommandeDroite = 7000;
-              CommandeGauche = 0;
-              delay_ms(70);
+         if((ValCapteurs[0] < 120) && (ValCapteurs[7] > 120)){
+              CommandeDroite = 4000;
+              CommandeGauche = 3000;
+              delay_ms(50);
+              c++;
               //black = 1;
          }
 
+
      }
      else{
-         CommandeDroite = 7000;
-         CommandeGauche = 7000;
+         CommandeDroite = 4000;
+         CommandeGauche = 4000;
          delay_ms(100);
-         //black = 0;
+         c = 0;
+
+     }
+     if(c > 20){
+         state=IDLE;
+         c = 0;
      }
 }
 
